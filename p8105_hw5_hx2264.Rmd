@@ -32,8 +32,60 @@ df <- df %>%
 
 df %>% 
   group_by(arm_id) %>% 
-  ggplot(aes(x = week, y = data, color = arm_id)) + 
+  ggplot(aes(x = week, y = data)) + 
     geom_line(aes(colour = arm_id, group = arm_id, linetype = arm)) +
-    theme(legend.position = "bottom")
+    theme(legend.position = "bottom") +
+    labs(
+      title = "Spaghetti plot of observations on each subject over week",
+      x = "Week",
+      y = "Observations of each subject"
+    )
 ```
+
+
+## Problem 2
+
+```{r}
+homic <-  read_csv("homicide_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(city_state = paste(city, state, sep = ",")) 
+
+homic_summary <- homic %>% 
+  group_by(city_state) %>% 
+  mutate(total = n()) %>%
+  filter(disposition == "Closed without arrest" |
+           disposition == "Open/No arrest") %>% 
+  mutate(unsolve = n()) %>% 
+  group_by(city_state, total, unsolve) %>% 
+  summarize()
+homic_summary
+
+btm <- homic_summary %>% 
+  filter(city_state == "Baltimore,MD")
+
+btm_prop <- prop.test(btm$unsolve, btm$total) %>% 
+  broom::tidy() %>% 
+  select(estimate, conf.low, conf.high)
+```
+
+
+
+```{r}
+map2(.x = homic_summary$unsolve, .y = homic_summary$total, ~prop.test(.x, .y))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
